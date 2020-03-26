@@ -142,7 +142,7 @@ namespace ProvisGames.Core.AudioSystem
         {
             if (allowMix && !isMixing)
             {
-                if (pivot < 0)
+                if (pivot <= 0)
                 {
                     EndMixing();
                 }
@@ -267,8 +267,12 @@ namespace ProvisGames.Core.AudioSystem
                 if (!isMixing || mode == GlobalAudioService.PlayMode.Single)
                     pivot = audioSources.Count; // Update should be on main thread.
 
-                trackMixer.SettingTarget(audioPlayer);
-                allowMix = true;
+                // Mixing Should applied When element count >= 2
+                if (pivot > 0) // Pivot always (except 0) same as total count - 1
+                {
+                    trackMixer.SettingTarget(audioPlayer);
+                    allowMix = true;
+                }
             }
             else
             {
