@@ -1,6 +1,6 @@
 {
   "name": "com.provisgames.globalaudiosystem",
-  "version": "1.0.0-preview.1",
+  "version": "1.0.0",
   "displayName": "Global Audio System",
   "description": "Handle Audio Globally with Addressable",
   "unity": "2019.2",
@@ -14,5 +14,10 @@
   "author": {
     "name": "ggzerosum(ProvisGames)",
     "email": "ggzerosum@naver.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ggzerosum/Unity-GlobalAudioSystem.git",
+    "revision": "4123d2a9a2a99a51e11cf1282ceee1d3e1bff32f"
   }
 }
