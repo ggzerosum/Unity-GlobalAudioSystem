@@ -15,6 +15,7 @@ namespace ProvisGames.Core.AudioSystem
         public virtual void BeginMix()
         {}
 
+        public virtual void SettingTarget(T target) {}
         public bool Mix(List<T> left, List<T> right, float deltaTime)
         {
             if (isExecutedFirst)

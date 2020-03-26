@@ -35,6 +35,13 @@ namespace ProvisGames.Core.AudioSystem
             this.transitionDelay = transitionDelay;
         }
 
+        public override void SettingTarget(AudioTrack.AudioPlayer target)
+        {
+            base.SettingTarget(target);
+
+            target.Audio.volume = 0;
+        }
+
         public override void BeginMix()
         {
             base.BeginMix();
@@ -50,12 +57,15 @@ namespace ProvisGames.Core.AudioSystem
         {
             base.EndMix();
 
-            // Stop Left AudioSources
-            for (int i = 0; i < this.cachedLeftPlayers.Count; i++)
+            if (this.cachedLeftPlayers != null)
             {
-                this.cachedLeftPlayers[i].StopAndEjectClip();
+                // Stop Left AudioSources
+                for (int i = 0; i < this.cachedLeftPlayers.Count; i++)
+                {
+                    this.cachedLeftPlayers[i].StopAndEjectClip();
+                }
+                this.cachedLeftPlayers = null;
             }
-            this.cachedLeftPlayers = null;
 
             this.m_FadeOutCurve.EndEvaluate();
             this.m_FadeInCurve.EndEvaluate();

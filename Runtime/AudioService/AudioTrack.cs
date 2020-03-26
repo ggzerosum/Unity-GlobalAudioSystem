@@ -267,6 +267,7 @@ namespace ProvisGames.Core.AudioSystem
                 if (!isMixing || mode == GlobalAudioService.PlayMode.Single)
                     pivot = audioSources.Count; // Update should be on main thread.
 
+                trackMixer.SettingTarget(audioPlayer);
                 allowMix = true;
             }
             else
