@@ -4,7 +4,7 @@
 ### Simple solution to managing audio clip  
 You can easliy change Audio clip of all component that is spreaded
 ![image](https://user-images.githubusercontent.com/14087406/77553904-bec8d900-6ef8-11ea-890c-375e17e1fa61.png)
-![image](https://user-images.githubusercontent.com/14087406/77553852-ace73600-6ef8-11ea-808e-342f0b868a88.png)
+![image](https://user-images.githubusercontent.com/14087406/77553852-ace73600-6ef8-11ea-808e-342f0b868a88.png)  
 Simply change clip at editor
 
 
