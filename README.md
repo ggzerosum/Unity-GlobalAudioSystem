@@ -1,11 +1,6 @@
-# I'm Writing Readme now...!
+# Simple Global Audio System of ProvisGames
 
-# ProvisGames
-
-## (Simple) Global Audio System
-
-What is this Package?
-
+## What is this?
 ### Simple solution to managing audio clip  
 You can easliy change Audio clip of all component that is spreaded
 ![image](https://user-images.githubusercontent.com/14087406/77553904-bec8d900-6ef8-11ea-890c-375e17e1fa61.png)
@@ -27,4 +22,8 @@ Simply change clip at editor
 ![image](https://user-images.githubusercontent.com/14087406/77554548-9097c900-6ef9-11ea-9fc5-8e0247dd4b53.png)  
 #### sound transitioning available
 
+## How to install?
+add this line at ProjectFolder/Packages/manifest.json
+"com.provisgames.globalaudiosystem": "https://github.com/ggzerosum/Unity-GlobalAudioSystem.git#Release"
 
+![image](https://user-images.githubusercontent.com/14087406/77725672-6baa6f80-7039-11ea-897a-8362bf7ded26.png)
