@@ -23,7 +23,7 @@ Simply change clip at editor
 #### sound transitioning available
 
 ## How to install?
-add this line at ProjectFolder/Packages/manifest.json
+add this line at ProjectFolder/Packages/manifest.json  
 "com.provisgames.globalaudiosystem": "https://github.com/ggzerosum/Unity-GlobalAudioSystem.git#Release"
 
 ![image](https://user-images.githubusercontent.com/14087406/77725672-6baa6f80-7039-11ea-897a-8362bf7ded26.png)
