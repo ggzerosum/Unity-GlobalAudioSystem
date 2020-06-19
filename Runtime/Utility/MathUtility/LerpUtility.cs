@@ -12,7 +12,7 @@ namespace ProvisGames.Core.Utility.MathUtility
         public static float Lerp(float min, float max, float t)
         {
             t = Mathf.Clamp01(t);
-            return (min * (1.0f - t)) + (max * t);
+            return min + ((max - min) * t);
         }
     }
 }
