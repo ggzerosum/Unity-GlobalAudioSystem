@@ -55,7 +55,7 @@ namespace ProvisGames.Core.AudioSystem
         }
         protected override bool ComponentEqualityCheck(AudioSource a, AudioSource b)
         {
-            return object.ReferenceEquals(a, b);
+            return a.Equals(b);
         }
     }
 }
