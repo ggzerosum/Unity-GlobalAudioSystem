@@ -367,10 +367,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   track: 0
-  playMode: 0
+  playMode: 1
   audioReference: {fileID: 11400000, guid: 8c67ee41a7cdb7c40ac445aeac429900, type: 2}
-  isLoop: 1
-  isMix: 0
+  isLoop: 0
+  isMix: 1
 --- !u!114 &694955338
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -881,7 +881,7 @@ MonoBehaviour:
   playMode: 1
   audioReference: {fileID: 11400000, guid: dc9b7344568f2ea48821b87b6ffc4c6d, type: 2}
   isLoop: 0
-  isMix: 0
+  isMix: 1
 --- !u!1 &903952440
 GameObject:
   m_ObjectHideFlags: 0

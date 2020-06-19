@@ -66,6 +66,7 @@ namespace ProvisGames.Core.AudioSystem
         {
             // Mixing이 실행되면 오디오에 다양한 상태변화가 일어나므로 옵션이 변경되더라도 Mixing이 완료된 후에 적용해야한다.
             // 이 구문에서는 옵션의 데이터만을 갱신한다.
+            // 1프레임 뒤에 옵션이 적용되는 것을 방지하기위해, 데이터를 먼저 갱신한다.
             UpdateOptionDataOnly();
 
             // Update Mixing
@@ -85,7 +86,7 @@ namespace ProvisGames.Core.AudioSystem
 
             for (int i = 0; i < audioSources.Count; i++) // front to end
             {
-                Debug.Log($"{i}번째 오디오 : {audioSources[i].IsAudioPlaying()}");
+                //Debug.Log($"{i}번째 오디오 : {audioSources[i].IsAudioPlaying()}");
                 if (!audioSources[i].IsAudioPlaying())
                 {
                     RemoveFlag(i, State.Play);
@@ -96,7 +97,7 @@ namespace ProvisGames.Core.AudioSystem
                 if (!hasAny)
                 {
                     removableList.Add(i);
-                    Debug.Log($"반환되어야할 오디오 인덱스 : {i}");
+                    //Debug.Log($"반환되어야할 오디오 인덱스 : {i}");
                 }
             }
 
@@ -104,9 +105,10 @@ namespace ProvisGames.Core.AudioSystem
             for (int i = removableList.Count - 1; i >= 0; i--) // end to front, for avoid index change
             {
                 this.pivot = ReMapPivotWhenElementRemoved(audioSources.Count, removableList[i]);
-                Debug.Log($"Moved Pivot: {this.pivot}");
+                //Debug.Log($"Moved Pivot: {this.pivot}");
                 AudioSource audiosource = this.audioSources[removableList[i]].Audio;
                 audioSources.RemoveAt(i); // Remove Inverse. This algorithm doesn't change index of list when remove
+                
                 // Audio Release to Pool
                 sharedAudioSourcePool.Release(audiosource);
             }
@@ -173,7 +175,7 @@ namespace ProvisGames.Core.AudioSystem
                     return false;
                 }
 
-                GetDividedListsByPivot(left, right, ApplLerpFlag, ApplLerpFlag);
+                GetDividedListsByPivot(left, right, MarkLerpFlag, MarkLerpFlag);
                 if (!trackMixer.Mix(left, right, deltaTime)) // Mix On Every Frame.
                 {
                     // When Mix Done
@@ -188,7 +190,7 @@ namespace ProvisGames.Core.AudioSystem
 
             return false;
 
-            void ApplLerpFlag(int i)
+            void MarkLerpFlag(int i)
             {
                 AddFlag(i, State.Lerp);
             }
@@ -229,18 +231,20 @@ namespace ProvisGames.Core.AudioSystem
             trackMixer.BeginMix();
             isMixing = true;
         }
+        
+        // EndMixing과 Play Audio입력이 경쟁상태에 빠져서는 안된다. 동기함수로 작성할 것을 강제한다.
         private void EndMixing()
         {
             if (isMixing)
             {
                 trackMixer.EndMix();
 
-                if (pivot >= 0)
+                // Mixing은 Track내 전체 오디오를 반으로 나눠서 계산하므로
+                // 끝나고나면 AudioPlayer에 Lerp가 입력된 상태이다. 따라서 Mixing을 끝낼 때
+                // 트랙 내 모든 AudioPlayer의 Lerp 상태를 해제해야한다.
+                for (int i = 0; i < audioSources.Count; i++)
                 {
-                    for (int i = 0; i < pivot + 1; i++)
-                    {
-                        RemoveFlag(i, State.Lerp);
-                    }
+                    RemoveFlag(i, State.Lerp);
                 }
             }
 
@@ -250,7 +254,8 @@ namespace ProvisGames.Core.AudioSystem
 
         private void GetDividedListsByPivot(List<AudioTrack.AudioPlayer> left, List<AudioTrack.AudioPlayer> right, Action<int> onLeft, Action<int> onRight)
         {
-            // Seperate All Audio By Pivot
+            // Divide All Audio Two Parts
+            // Left : mix from, Right : mix to
             for (int i = 0; i < audioSources.Count; i++)
             {
                 if (i < pivot)
@@ -307,7 +312,7 @@ namespace ProvisGames.Core.AudioSystem
                 }
                 else if (mode == GlobalAudioService.PlayMode.Additive)// Mode == Additive
                 {
-
+                    // 반드시 아무것도 하지 말아야한다.
                 }
             }
 
