@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 using ProvisGames.Core.Utility;
-using UnityEngine.AddressableAssets;
 
 namespace ProvisGames.Core.AudioSystem
 {
@@ -21,7 +17,7 @@ namespace ProvisGames.Core.AudioSystem
         }
 
         // Shared Pool
-        private readonly AudioSourcePool pool;
+        private readonly AudioSourcePool sharedAudioSourcePool;
         private Mixer<AudioPlayer> trackMixer;
 
         // These two Audio List need to be unordered.
@@ -53,28 +49,34 @@ namespace ProvisGames.Core.AudioSystem
         private bool isMixing = false;
 
         // Dirty Flag
-        private bool isOptionDirty = false;
+        private bool shouldApplyOptionWhenPossible = false;
+        private bool isOptionDataDirty = false;
 
         // Options
         private float trackVolume = 1.0f;
 
         public AudioTrack(AudioSourcePool pool)
         {
-            this.pool = pool;
+            this.sharedAudioSourcePool = pool;
             this.audioSources = new List<AudioPlayer>();
             this.trackMixer = AudioMixerFactory.CreateNullMixer();
         }
 
         public void OnUpdate(float deltaTime)
         {
+            // Mixing이 실행되면 오디오에 다양한 상태변화가 일어나므로 옵션이 변경되더라도 Mixing이 완료된 후에 적용해야한다.
+            // 이 구문에서는 옵션의 데이터만을 갱신한다.
+            UpdateOptionDataOnly();
+
             // Update Mixing
             if (!UpdateMixing(deltaTime))
             {
                 // 여기서만 Inspect 해야하는 지 생각해보기.
                 InspectAudioList(); // Update Audio State
-            }
 
-            UpdateOption();
+                // 갱신되었던 옵션 데이터를 Mixing이 일어나지 않을 때 즉시 적용한다.
+                ApplyOption();
+            }
         }
 
         private void InspectAudioList()
@@ -98,6 +100,7 @@ namespace ProvisGames.Core.AudioSystem
                 }
             }
 
+            // 가장 뒤부터 차례대로 삭제함으로써 RemoveAt을 For루프 안에서 사용할 수 있게한다.
             for (int i = removableList.Count - 1; i >= 0; i--) // end to front, for avoid index change
             {
                 this.pivot = ReMapPivotWhenElementRemoved(audioSources.Count, removableList[i]);
@@ -105,13 +108,14 @@ namespace ProvisGames.Core.AudioSystem
                 AudioSource audiosource = this.audioSources[removableList[i]].Audio;
                 audioSources.RemoveAt(i); // Remove Inverse. This algorithm doesn't change index of list when remove
                 // Audio Release to Pool
-                pool.Release(audiosource);
+                sharedAudioSourcePool.Release(audiosource);
             }
 
             ListPool<int>.Release(removableList);
         }
         private int ReMapPivotWhenElementRemoved(int arrayLength, int removeIndex)
         {
+            // 배열의 길이가 0일 경우에는 Pivot을 움직일 공간 자체가 없으므로 예외처리한다.
             if (arrayLength == 0)
                 throw new ArgumentOutOfRangeException("arrayLength must bigger than 0");
 
@@ -120,10 +124,12 @@ namespace ProvisGames.Core.AudioSystem
                 return -1;
             }
 
+            // Pivot 좌측의 Index를 삭제할 경우, Pivot을 좌측으로 당겨야한다.
             if (removeIndex < this.pivot)
             {
                 return this.pivot - 1;
             }
+            // Pivot의 위치와 동일한 Index를 삭제할 경우, Index가 배열의 마지막 요소였을 경우 Pivot을 배열의 길이에맞게 한칸 좌측으로 당겨야한다.
             else if (removeIndex == this.pivot)
             {
                 if (arrayLength - 1 == removeIndex) // if remove Index is last index of array
@@ -187,18 +193,36 @@ namespace ProvisGames.Core.AudioSystem
                 AddFlag(i, State.Lerp);
             }
         }
-        private void UpdateOption()
+
+        // 옵션의 '데이터'만을 갱신합니다.
+        private void UpdateOptionDataOnly()
         {
-            if (isOptionDirty)
+            if (isOptionDataDirty)
             {
                 for (int i = 0; i < audioSources.Count; i++)
                 {
                     audioSources[i] = new AudioPlayer(audioSources[i], new AudioPlayer.AudioVolume(0.0f, this.trackVolume));
                 }
 
-                isOptionDirty = false;
+                isOptionDataDirty = false;
+                shouldApplyOptionWhenPossible = true;
             }
         }
+
+        // 갱신된 옵션을 '적용'합니다.
+        private void ApplyOption()
+        {
+            if (shouldApplyOptionWhenPossible)
+            {
+                for (int i = 0; i < audioSources.Count; i++)
+                {
+                    audioSources[i].ApplyOptionDataImmediately();
+                }
+
+                shouldApplyOptionWhenPossible = false;
+            }
+        }
+
 
         private void BeginMixing()
         {
@@ -254,7 +278,7 @@ namespace ProvisGames.Core.AudioSystem
 
         public void Play(GlobalAudioService.AudioSetting setting, GlobalAudioService.PlayMode mode, bool mix)
         {
-            AudioSource source = this.pool.Get();
+            AudioSource source = this.sharedAudioSourcePool.Get();
             source.clip = setting.Clip;
             source.loop = setting.IsLoop;
             source.volume = this.trackVolume;
@@ -304,7 +328,7 @@ namespace ProvisGames.Core.AudioSystem
         public void SetVolume(float volume)
         {
             this.trackVolume = Mathf.Clamp01(volume);
-            this.isOptionDirty = true;
+            this.isOptionDataDirty = true;
         }
 
         private bool HasFlag(int index, State check)
@@ -380,12 +404,26 @@ namespace ProvisGames.Core.AudioSystem
             }
             public void StopAndEjectClip()
             {
+                if (this.Audio == null)
+                    return;
+
                 this.Audio.Stop();
                 this.Audio.clip = null;
             }
             public bool IsAudioPlaying()
             {
-                return this.Audio?.isPlaying ?? false;
+                if (this.Audio == null)
+                    return false;
+
+                return this.Audio.isPlaying;
+            }
+
+            public void ApplyOptionDataImmediately()
+            {
+                if (this.Audio != null)
+                {
+                    this.Audio.volume = this.Volume.Max;
+                }
             }
 
             public struct AudioVolume
