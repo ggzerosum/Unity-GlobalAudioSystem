@@ -18,7 +18,8 @@ namespace ProvisGames.Core.AudioSystem
         private static CurveAsset fadeInData, fadeOutData;
         public static VolumeMixer CreateVolumeMixer(float transitionTime = 0.0f)
         {
-            Debug.Log($"Path:{mixerAssetPath}/{fadeInAsset}");
+            //Debug.Log($"Path:{mixerAssetPath}/{fadeInAsset}");
+
             if (fadeInData == null)
                 fadeInData = Resources.Load<CurveAsset>($"{mixerAssetPath}/{fadeInAsset}");
             if (fadeOutData == null)
