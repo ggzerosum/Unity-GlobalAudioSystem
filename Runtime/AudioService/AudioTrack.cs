@@ -104,10 +104,11 @@ namespace ProvisGames.Core.AudioSystem
             // 가장 뒤부터 차례대로 삭제함으로써 RemoveAt을 For루프 안에서 사용할 수 있게한다.
             for (int i = removableList.Count - 1; i >= 0; i--) // end to front, for avoid index change
             {
-                this.pivot = ReMapPivotWhenElementRemoved(audioSources.Count, removableList[i]);
+                int indexOfAudioSource = removableList[i];
+                this.pivot = ReMapPivotWhenElementRemoved(audioSources.Count, indexOfAudioSource);
                 //Debug.Log($"Moved Pivot: {this.pivot}");
-                AudioSource audiosource = this.audioSources[removableList[i]].Audio;
-                audioSources.RemoveAt(i); // Remove Inverse. This algorithm doesn't change index of list when remove
+                AudioSource audiosource = this.audioSources[indexOfAudioSource].Audio;
+                audioSources.RemoveAt(indexOfAudioSource); // Remove Inverse. This algorithm doesn't change index of list when remove
                 
                 // Audio Release to Pool
                 sharedAudioSourcePool.Release(audiosource);
