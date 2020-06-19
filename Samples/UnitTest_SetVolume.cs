@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace ProvisGames.Core.AudioSystem
+namespace ProvisGames.Core.AudioSystem.UnitTest
 {
     internal class UnitTest_SetVolume : MonoBehaviour
     {
