@@ -14,7 +14,7 @@ namespace ProvisGames.Core.AudioSystem
     /// <summary>
     /// Mix Multiple Audio in same Track.
     /// </summary>
-    public class VolumeMixer : Mixer<AudioTrack.AudioPlayer>
+    public class VolumeTransition : Mixer<AudioTrack.AudioPlayer>
     {
         private ReusableCurve m_FadeOutCurve, m_FadeInCurve;
         private float transitionDelay;
@@ -27,7 +27,7 @@ namespace ProvisGames.Core.AudioSystem
 
         private List<AudioTrack.AudioPlayer> cachedLeftPlayers;
 
-        public VolumeMixer(CurveAsset fadeout, CurveAsset fadein, float transitionDelay)
+        public VolumeTransition(CurveAsset fadeout, CurveAsset fadein, float transitionDelay)
         {
             this.m_FadeOutCurve = fadeout.GetReusableCurve();
             this.m_FadeInCurve = fadein.GetReusableCurve();
