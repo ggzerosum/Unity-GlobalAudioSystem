@@ -44,7 +44,7 @@ namespace ProvisGames.Core.AudioSystem
         }
 
         // Mixing
-        private int pivot = -1;
+        private int mixingPivot = -1;
         private bool allowMix = false;
         private bool isMixing = false;
 
@@ -105,8 +105,8 @@ namespace ProvisGames.Core.AudioSystem
             for (int i = removableList.Count - 1; i >= 0; i--) // end to front, for avoid index change
             {
                 int indexOfAudioSource = removableList[i];
-                this.pivot = ReMapPivotWhenElementRemoved(audioSources.Count, indexOfAudioSource);
-                //Debug.Log($"Moved Pivot: {this.pivot}");
+                ReMapPivotWhenElementRemoved(audioSources.Count, indexOfAudioSource);
+
                 AudioSource audiosource = this.audioSources[indexOfAudioSource].Audio;
                 audioSources.RemoveAt(indexOfAudioSource); // Remove Inverse. This algorithm doesn't change index of list when remove
                 
@@ -116,33 +116,7 @@ namespace ProvisGames.Core.AudioSystem
 
             ListPool<int>.Release(removableList);
         }
-        private int ReMapPivotWhenElementRemoved(int arrayLength, int removeIndex)
-        {
-            // 배열의 길이가 0일 경우에는 Pivot을 움직일 공간 자체가 없으므로 예외처리한다.
-            if (arrayLength == 0)
-                throw new ArgumentOutOfRangeException("arrayLength must bigger than 0");
 
-            if (arrayLength == 1) // removable Index is just one (0 index)
-            {
-                return -1;
-            }
-
-            // Pivot 좌측의 Index를 삭제할 경우, Pivot을 좌측으로 당겨야한다.
-            if (removeIndex < this.pivot)
-            {
-                return this.pivot - 1;
-            }
-            // Pivot의 위치와 동일한 Index를 삭제할 경우, Index가 배열의 마지막 요소였을 경우 Pivot을 배열의 길이에맞게 한칸 좌측으로 당겨야한다.
-            else if (removeIndex == this.pivot)
-            {
-                if (arrayLength - 1 == removeIndex) // if remove Index is last index of array
-                {
-                    return this.pivot - 1;
-                }
-            }
-
-            return this.pivot;
-        }
         /// <summary>
         /// Update Mixing Algorithm
         /// </summary>
@@ -151,7 +125,7 @@ namespace ProvisGames.Core.AudioSystem
         {
             if (allowMix && !isMixing)
             {
-                if (pivot <= 0)
+                if (mixingPivot <= 0)
                 {
                     EndMixing();
                 }
@@ -168,7 +142,7 @@ namespace ProvisGames.Core.AudioSystem
                 var right = ListPool<AudioPlayer>.Get();
 
                 // there's one or no audio available
-                if (pivot <= 0)
+                if (mixingPivot <= 0)
                 {
                     EndMixing();
                     ListPool<AudioPlayer>.Release(left);
@@ -253,13 +227,59 @@ namespace ProvisGames.Core.AudioSystem
             isMixing = false;
         }
 
+        private void ReMapPivotWhenElementRemoved(int arrayLength, int removeIndex)
+        {
+            // 배열의 길이가 0일 경우에는 Pivot을 움직일 공간 자체가 없으므로 예외처리한다.
+            if (arrayLength == 0)
+                throw new ArgumentOutOfRangeException("arrayLength must bigger than 0");
+
+            if (arrayLength == 1) // removable Index is just one (0 index)
+            {
+                ResetPivot();
+            }
+
+            // Pivot 좌측의 Index를 삭제할 경우, Pivot을 좌측으로 당겨야한다.
+            if (removeIndex < this.mixingPivot)
+            {
+                DecrementPivot();
+            }
+            // Pivot의 위치와 동일한 Index를 삭제할 경우, Index가 배열의 마지막 요소였을 경우 Pivot을 배열의 길이에맞게 한칸 좌측으로 당겨야한다.
+            else if (removeIndex == this.mixingPivot)
+            {
+                if (arrayLength - 1 == removeIndex) // if remove Index is last index of array
+                {
+                    DecrementPivot();
+                }
+            }
+
+            // Pivot을 건드리지않고 그대로 둔다.
+        }
+        private void IncrementPivot()
+        {
+            MovePivot(1);
+        }
+        private void DecrementPivot()
+        {
+            MovePivot(-1);
+        }
+        private void ResetPivot()
+        {
+            // 언제나 Pivot을 -1로 설정하기위함.
+            MovePivot(-(mixingPivot + 1));
+        }
+        private void MovePivot(int delta)
+        {
+            mixingPivot = Mathf.Clamp(mixingPivot + delta, -1, int.MaxValue);
+        }
+
+
         private void GetDividedListsByPivot(List<AudioTrack.AudioPlayer> left, List<AudioTrack.AudioPlayer> right, Action<int> onLeft, Action<int> onRight)
         {
             // Divide All Audio Two Parts
             // Left : mix from, Right : mix to
             for (int i = 0; i < audioSources.Count; i++)
             {
-                if (i < pivot)
+                if (i < mixingPivot)
                 {
                     left.Add(audioSources[i]);
                     onLeft(i);
@@ -271,6 +291,7 @@ namespace ProvisGames.Core.AudioSystem
                 }
             }
         }
+
         public void SetTrackMixer(Mixer<AudioPlayer> mixer)
         {
             if (this.trackMixer.GetType().IsAssignableFrom((mixer.GetType())))
@@ -295,10 +316,13 @@ namespace ProvisGames.Core.AudioSystem
                 // If Mode is Single, Pivot always move to lastest player
                 // If Mode is Additive, Pivot stay while mixing
                 if (!isMixing || mode == GlobalAudioService.PlayMode.Single)
-                    pivot = audioSources.Count; // Update should be on main thread.
+                {
+                    // Pivot을 마지막 오디오 플레이어의 위치로 옮깁니다.
+                    MovePivot(audioSources.Count - mixingPivot); // Update should be on main thread.
+                }
 
                 // Mixing Should applied When element count >= 2
-                if (pivot > 0) // Pivot always (except 0) same as total count - 1
+                if (mixingPivot > 0) // Pivot always (except 0) same as total count - 1
                 {
                     trackMixer.SettingTarget(audioPlayer);
                     allowMix = true;
