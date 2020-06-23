@@ -117,7 +117,7 @@ namespace ProvisGames.Core.AudioSystem
             if (!isMix)
                 ServiceLocator.Instance.GetGlobalAudioService().Play((int)track, new GlobalAudioService.AudioSetting(audioClip.GetResult, isLoop), playMode);
             else
-                ServiceLocator.Instance.GetGlobalAudioService().Play((int)track, new GlobalAudioService.AudioSetting(audioClip.GetResult, isLoop), playMode, GlobalAudioService.MixMode.VolumeMix);
+                ServiceLocator.Instance.GetGlobalAudioService().Play((int)track, new GlobalAudioService.AudioSetting(audioClip.GetResult, isLoop), playMode, GlobalAudioService.MixMode.Transition);
         }
     }
 }
