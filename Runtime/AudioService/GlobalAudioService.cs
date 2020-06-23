@@ -16,7 +16,9 @@ namespace ProvisGames.Core.AudioSystem
         }
         public enum MixMode
         {
-            VolumeMix
+            Transition,
+            FadeIn,
+            FadeOut,
         }
 
         private static AudioSetting Default = AudioSetting.NullSetting;
@@ -45,14 +47,7 @@ namespace ProvisGames.Core.AudioSystem
         public void Play(int track, AudioSetting setting, PlayMode playMode, MixMode mixmode)
         {
             TryCreateTrack(track);
-
-            Mixer<AudioTrack.AudioPlayer> mixer = AudioMixerFactory.CreateNullMixer();
-            if (mixmode == MixMode.VolumeMix)
-            {
-                mixer = AudioMixerFactory.CreateVolumeMixer();
-            }
-
-            this.tracks[track].SetTrackMixer(mixer);
+            this.tracks[track].SetTrackMixer(SelectMixer(mixmode));
             this.tracks[track].Play(setting, playMode, true);
         }
         public void Stop(int track)
@@ -106,6 +101,24 @@ namespace ProvisGames.Core.AudioSystem
             }
 
             return false;
+        }
+
+        private Mixer<AudioTrack.AudioPlayer> SelectMixer(MixMode mixMode)
+        {
+            switch (mixMode)
+            {
+                case MixMode.Transition:
+                    return AudioMixerFactory.CreateVolumeTransitionMixer();
+
+                case MixMode.FadeIn:
+                    return AudioMixerFactory.CreateVolumeFadeInMixer();
+
+                case MixMode.FadeOut:
+                    return AudioMixerFactory.CreateVolumeFadeOutMixer();
+
+                default:
+                    return AudioMixerFactory.CreateNullMixer();
+            }
         }
 
         public struct AudioSetting
