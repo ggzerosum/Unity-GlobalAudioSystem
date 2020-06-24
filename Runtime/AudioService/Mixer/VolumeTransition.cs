@@ -14,7 +14,7 @@ namespace ProvisGames.Core.AudioSystem
     /// <summary>
     /// Mix Multiple Audio in same Track.
     /// </summary>
-    public class VolumeTransition : Mixer<AudioTrack.AudioPlayer>
+    internal class VolumeTransition : Mixer<AudioTrack.AudioPlayer>
     {
         // 볼륨 전환은 트랙내 오디오의 갯수가 최소 2개 이상이어야한다.
         public override int MinimumRequirementsCount => 2;

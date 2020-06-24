@@ -7,12 +7,12 @@ using UnityEngine;
 
 namespace ProvisGames.Core.Utility
 {
-    public static class CurveExtension
+    internal static class CurveExtension
     {
         /// <summary>
         /// Create reusable Evaluator of Animation Curve
         /// </summary>
-        public static ReusableCurve GetReusableCurve(this AnimationCurve @this)
+        internal static ReusableCurve GetReusableCurve(this AnimationCurve @this)
         {
             return new ReusableCurve(@this);
         }

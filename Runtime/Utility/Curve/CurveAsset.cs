@@ -11,7 +11,7 @@ namespace ProvisGames.Core.Utility
     /// Curve Data for Lerp Sound
     /// </summary>
     [CreateAssetMenu(fileName = "Curve Asset", menuName = "ProvisGames/Utility/Curve/Curve Asset")]
-    public class CurveAsset : ScriptableObject
+    internal class CurveAsset : ScriptableObject
     {
         [Header("Curve Data. Curve will be normalized to 0 - 1")]
         [SerializeField] private AnimationCurve curve = new AnimationCurve(new Keyframe(0, 1), new Keyframe(1, 1));
@@ -25,7 +25,7 @@ namespace ProvisGames.Core.Utility
     /// <summary>
     /// Reusable Evaluator
     /// </summary>
-    public struct ReusableCurve
+    internal struct ReusableCurve
     {
         public ReusableCurve(AnimationCurve curve)
         {
@@ -82,14 +82,20 @@ namespace ProvisGames.Core.Utility
             this.copy = null;
             this.simulatedTime = 0.0f;
         }
+
+        // 0 값으로 인해 Normalized Value 추측이 성립하지 않을 수 있는 알고리즘이다.
+        // 따라서, Evaluate는 반드시 0 이상의 deltaTime을 요구한다.
+        // 정확하지 않은 계산이므로 다른 프로젝트에서는 사용하지 말 것.
         public CurveValue Evaluate(float deltaTime)
         {
+            // 0 값이 나오는 것을 방지하기 위해, 먼저 델타를 더해준다.
+            simulatedTime += deltaTime;
+
             float time = simulatedTime;
             float normalizedTime = NormalizeTime(time);
             float value = this.copy.Evaluate(time);
             float normalizedValue = time != 0 ? (value * normalizedTime) / time : 0;
 
-            simulatedTime += deltaTime;
             return new CurveValue(value, normalizedValue);
         }
 

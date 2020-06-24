@@ -6,13 +6,12 @@ using ProvisGames.Core.Utility.MathUtility;
 
 using UnityEngine;
 
-
 namespace ProvisGames.Core.AudioService
 {
     /// <summary>
     /// Track의 전체 볼륨을 주어진 Curve에 따라 Fade 합니다.
     /// </summary>
-    public sealed class VolumeControl : Mixer<AudioTrack.AudioPlayer>
+    internal sealed class VolumeControl : Mixer<AudioTrack.AudioPlayer>
     {
         // 볼륨 컨트롤은 트랙내 모든 오디오에 적용되므로, 오디오의 갯수가 1개 이상만 있으면된다.
         public override int MinimumRequirementsCount => 1;
@@ -69,13 +68,14 @@ namespace ProvisGames.Core.AudioService
 
         protected override void BeforeMixUpdate(float deltaTime)
         {
-            // duration이 0일 경우 마지막 값에 바로 도달할 수 있는 Delta값을 계산
-            float dt = duration >= float.Epsilon ? deltaTime / duration : m_FadeOutCurve.EndTime - m_FadeOutCurve.CurveTime;
+            float dt = duration >= float.Epsilon ? deltaTime / duration : deltaTime;
             curveValue = m_FadeOutCurve.Evaluate(dt);
         }
 
         protected override void PrepareMix(List<AudioTrack.AudioPlayer> left, List<AudioTrack.AudioPlayer> right)
-        {}
+        {
+
+        }
 
         protected override bool Mixing(List<AudioTrack.AudioPlayer> left, List<AudioTrack.AudioPlayer> right)
         {
@@ -85,7 +85,6 @@ namespace ProvisGames.Core.AudioService
                 SetVolumeAll(right, curveValue.Normalized);
                 
                 isEnd = m_FadeOutCurve.GetNormalizedElapsedTime() >= 1.0f;
-
                 return true;
             }
             else // Mixing 끝났음을 반드시 false로 알려야한다.

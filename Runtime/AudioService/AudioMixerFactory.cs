@@ -10,7 +10,7 @@ using ProvisGames.Core.Utility;
 
 namespace ProvisGames.Core.AudioSystem
 {
-    public class AudioMixerFactory
+    internal class AudioMixerFactory
     {
         private static readonly string mixerAssetPath = "AudioMixer";
         private static readonly string fadeInAsset = "FadeIn";

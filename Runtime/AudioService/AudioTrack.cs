@@ -88,9 +88,9 @@ namespace ProvisGames.Core.AudioSystem
         {
             // Mix와 Audio Play의 알고리즘은 철저히 분리되어야하며, Pivot을 통해서만 서로 제약해야한다.
             AudioSource source = this.sharedAudioSourcePool.Get();
-            source.clip = setting.Clip;
-            source.loop = setting.IsLoop;
             source.volume = this.trackVolume;
+            source.loop = setting.IsLoop;
+            source.clip = setting.Clip;
             AudioPlayer audioPlayer = new AudioPlayer(source, new AudioPlayer.AudioVolume(0.0f, this.trackVolume), State.Play);
 
             if (_isMixing)
