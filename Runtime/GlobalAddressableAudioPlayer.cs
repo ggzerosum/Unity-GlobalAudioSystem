@@ -18,7 +18,7 @@ namespace ProvisGames.Core.AudioSystem
     /// <summary>
     /// Audio Player that using Global Audio Service
     /// </summary>
-    public class GlobalAudioPlayer : MonoBehaviour
+    public class GlobalAddressableAudioPlayer : MonoBehaviour
     {
         public enum Track : int
         {
