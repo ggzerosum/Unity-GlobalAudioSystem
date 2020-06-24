@@ -1,6 +1,6 @@
 {
   "name": "com.provisgames.globalaudiosystem",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "displayName": "Global Audio System",
   "description": "Handle Audio Globally with Addressable",
   "unity": "2019.2",
