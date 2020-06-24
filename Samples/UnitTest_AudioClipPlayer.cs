@@ -23,5 +23,24 @@ namespace ProvisGames.Core.AudioSystem.UnitTest
                 ?.GetGlobalAudioService()
                 ?.Play(track, new GlobalAudioService.AudioSetting(clip, isLoop), GlobalAudioService.PlayMode.Single);
         }
+
+        public void PlayFadeOutMix()
+        {
+            ServiceLocator.Instance
+                ?.GetGlobalAudioService()
+                ?.Play(track, new GlobalAudioService.AudioSetting(clip, isLoop), GlobalAudioService.PlayMode.Additive, GlobalAudioService.MixMode.FadeOut);
+        }
+        public void PlayFadeInMix()
+        {
+            ServiceLocator.Instance
+                ?.GetGlobalAudioService()
+                ?.Play(track, new GlobalAudioService.AudioSetting(clip, isLoop), GlobalAudioService.PlayMode.Additive, GlobalAudioService.MixMode.FadeIn);
+        }
+        public void PlayTransitionMix()
+        {
+            ServiceLocator.Instance
+                ?.GetGlobalAudioService()
+                ?.Play(track, new GlobalAudioService.AudioSetting(clip, isLoop), GlobalAudioService.PlayMode.Additive, GlobalAudioService.MixMode.Transition);
+        }
     }
 }
