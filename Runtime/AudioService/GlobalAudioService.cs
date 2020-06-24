@@ -9,6 +9,25 @@ namespace ProvisGames.Core.AudioSystem
 {
     public class GlobalAudioService
     {
+        /*
+         * GloablAudioService 작동 개요
+         *
+         * 1. Mixing 중이 아닐 때
+         *  Single
+         *      Track의 다른 오디오를 전부 Stop시키고 자신만 실행됩니다.
+         *
+         *  Additive:
+         *      Track의 다른 오디오는 그대로 둔 채 자신을 마지막에 추가합니다.
+         *
+         * 2. Mixing 중 일 때
+         *  Single
+         *      Track의 다른 오디오 마지막에 추가되며, Mixing Pivot을 자신에게 당겨옵니다.
+         *      따라서, Mixing Pivot의 우측에 자신만 존재하게됩니다.
+         *
+         *  Additive:
+         *      Track의 다른 오디오 마지막에 추가되며, Mixing Pivot을 그대로 둡니다.
+         *      따라서, Mixing Pivot의 우측에 여러개의 오디오가 존재할 수 있으며 자기 자신을 추가하기만 합니다.
+         */
         public enum PlayMode
         {
             Single,
@@ -42,14 +61,16 @@ namespace ProvisGames.Core.AudioSystem
         public void Play(int track, AudioSetting setting, PlayMode playMode)
         {
             TryCreateTrack(track);
-            this.tracks[track].Play(setting, playMode, false);
+            this.tracks[track].PlayAudio(setting, playMode);
         }
         public void Play(int track, AudioSetting setting, PlayMode playMode, MixMode mixmode)
         {
             TryCreateTrack(track);
+            this.tracks[track].PlayAudio(setting, playMode);
             this.tracks[track].SetTrackMixer(SelectMixer(mixmode));
-            this.tracks[track].Play(setting, playMode, true);
+            this.tracks[track].DoMixing();
         }
+
         public void Stop(int track)
         {
             if (HasTrack(track))
@@ -57,6 +78,7 @@ namespace ProvisGames.Core.AudioSystem
                 this.tracks[track].Stop();
             }
         }
+
         /// <summary>
         /// set volume(0-1)
         /// </summary>
@@ -80,6 +102,7 @@ namespace ProvisGames.Core.AudioSystem
             }
         }
 
+
         public void OnUpdate(float deltaTime)
         {
             foreach (KeyValuePair<int, AudioTrack> pair in tracks)
@@ -87,6 +110,7 @@ namespace ProvisGames.Core.AudioSystem
                 pair.Value.OnUpdate(deltaTime);
             }
         }
+
 
         public bool HasTrack(int track)
         {
@@ -102,6 +126,7 @@ namespace ProvisGames.Core.AudioSystem
 
             return false;
         }
+
 
         private Mixer<AudioTrack.AudioPlayer> SelectMixer(MixMode mixMode)
         {
@@ -120,6 +145,7 @@ namespace ProvisGames.Core.AudioSystem
                     return AudioMixerFactory.CreateNullMixer();
             }
         }
+
 
         public struct AudioSetting
         {
