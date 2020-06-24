@@ -9,13 +9,16 @@ namespace ProvisGames.Core.AudioSystem
 {
     public abstract class Mixer<T>
     {
+        // 최소 요구되는 T 인스턴스의 갯수
+        public abstract int MinimumRequirementsCount { get; }
+
         public float MixTime { get; protected set; } = 0.0f;
         private bool isExecutedFirst = true;
 
         public virtual void BeginMix()
         {}
 
-        public virtual void SettingTarget(T target) {}
+        public virtual void AttuneAudioPlayerToMixer(ref T target) {}
         public bool Mix(List<T> left, List<T> right, float deltaTime)
         {
             if (isExecutedFirst)
@@ -39,7 +42,7 @@ namespace ProvisGames.Core.AudioSystem
             Reset();
         }
 
-        public void Reset()
+        public virtual void Reset()
         {
             this.MixTime = 0.0f;
             this.isExecutedFirst = true;
