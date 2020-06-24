@@ -93,6 +93,11 @@ namespace ProvisGames.Core.Utility
             return new CurveValue(value, normalizedValue);
         }
 
+        public float GetNormalizedElapsedTime()
+        {
+            return Mathf.Clamp01(NormalizeTime(CurveTime));
+        }
+
         private AnimationCurve CreateCopy()
         {
             return new AnimationCurve(source.keys);
