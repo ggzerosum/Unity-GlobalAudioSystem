@@ -24,6 +24,13 @@ namespace ProvisGames.Core.AudioSystem.UnitTest
                 ?.Play(track, new GlobalAudioService.AudioSetting(clip, isLoop), GlobalAudioService.PlayMode.Single);
         }
 
+        public void ChangeToFadeOutMixer()
+        {
+            ServiceLocator.Instance
+                ?.GetGlobalAudioService()
+                ?.FadeOut(track);
+        }
+
         public void PlayFadeOutMix()
         {
             ServiceLocator.Instance
