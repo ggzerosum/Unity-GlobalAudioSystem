@@ -25,11 +25,11 @@ namespace ProvisGames.Core.AudioSystem
 
         public static VolumeControl CreateVolumeFadeInMixer()
         {
-            return new VolumeControl(LoadFadeInCurveAsset(), false);
+            return new VolumeControl(LoadFadeInCurveAsset(), 2.0f, false);
         }
         public static VolumeControl CreateVolumeFadeOutMixer()
         {
-            return new VolumeControl(LoadFadeOutCurveAsset(), true);
+            return new VolumeControl(LoadFadeOutCurveAsset(), 2.0f, true);
         }
 
         private static AudioNullMixer mixerCache = new AudioNullMixer();
