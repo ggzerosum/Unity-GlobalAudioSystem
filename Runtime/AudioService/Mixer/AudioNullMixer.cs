@@ -9,6 +9,9 @@ namespace Assets.ProvisGames.AudioService.Mixer
 {
     public class AudioNullMixer : Mixer<AudioTrack.AudioPlayer>
     {
+        // Null 객체이므로 Mixing이 실행되지 않도록 Infinite에 해당할 아주 큰 값을 넣어둔다.
+        public override int MinimumRequirementsCount => int.MaxValue;
+
         protected override void BeforeMixUpdate(float deltaTime)
         {}
 

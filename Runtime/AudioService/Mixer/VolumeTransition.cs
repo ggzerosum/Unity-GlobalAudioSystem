@@ -16,6 +16,9 @@ namespace ProvisGames.Core.AudioSystem
     /// </summary>
     public class VolumeTransition : Mixer<AudioTrack.AudioPlayer>
     {
+        // 볼륨 전환은 트랙내 오디오의 갯수가 최소 2개 이상이어야한다.
+        public override int MinimumRequirementsCount => 2;
+
         private ReusableCurve m_FadeOutCurve, m_FadeInCurve;
         private float transitionDelay;
         private bool isFadingOut;
@@ -35,9 +38,9 @@ namespace ProvisGames.Core.AudioSystem
             this.transitionDelay = transitionDelay;
         }
 
-        public override void SettingTarget(AudioTrack.AudioPlayer target)
+        public override void AttuneAudioPlayerToMixer(ref AudioTrack.AudioPlayer target)
         {
-            base.SettingTarget(target);
+            base.AttuneAudioPlayerToMixer(ref target);
 
             target.Audio.volume = 0;
         }
@@ -131,11 +134,6 @@ namespace ProvisGames.Core.AudioSystem
 
                 player.Audio.volume = Mathf.Clamp01(LerpUtility.Lerp(min, max, lerpRatio));
             }
-        }
-
-        private void StopLeft(List<AudioTrack.AudioPlayer> audioPlayers)
-        {
-
         }
     }
 }

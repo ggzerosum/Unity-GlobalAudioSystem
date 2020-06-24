@@ -14,23 +14,32 @@ namespace ProvisGames.Core.AudioService
     /// </summary>
     public sealed class VolumeControl : Mixer<AudioTrack.AudioPlayer>
     {
+        // 볼륨 컨트롤은 트랙내 모든 오디오에 적용되므로, 오디오의 갯수가 1개 이상만 있으면된다.
+        public override int MinimumRequirementsCount => 1;
+
         private ReusableCurve m_FadeOutCurve;
-        private ReusableCurve.CurveValue fadeOutFactor, fadeInFactor;
+        private ReusableCurve.CurveValue curveValue;
         private float duration;
 
         private readonly bool stopAudioPlayersWhenMixEnd;
+
+        private bool isEnd = false;
+
         private List<AudioTrack.AudioPlayer> cachedLeft;
         private List<AudioTrack.AudioPlayer> cachedRight;
 
-        public VolumeControl(CurveAsset fadeout, bool stopAudioPlayersWhenMixEnd)
+
+        public VolumeControl(CurveAsset fadeout, float duration, bool stopAudioPlayersWhenMixEnd)
         {
             this.m_FadeOutCurve = fadeout.GetReusableCurve();
+
+            this.duration = duration;
             this.stopAudioPlayersWhenMixEnd = stopAudioPlayersWhenMixEnd;
         }
 
-        public override void SettingTarget(AudioTrack.AudioPlayer target)
+        public override void AttuneAudioPlayerToMixer(ref AudioTrack.AudioPlayer target)
         {
-            base.SettingTarget(target);
+            base.AttuneAudioPlayerToMixer(ref target);
 
             target.Audio.volume = 0;
         }
@@ -40,7 +49,6 @@ namespace ProvisGames.Core.AudioService
             base.BeginMix();
 
             this.m_FadeOutCurve.BeginEvaluate();
-            duration = m_FadeOutCurve.EndTime - m_FadeOutCurve.BeginTime;
         }
 
         public override void EndMix()
@@ -49,28 +57,34 @@ namespace ProvisGames.Core.AudioService
 
             if (stopAudioPlayersWhenMixEnd)
             {
-                // Mixing이 끝났을 때 한번만 초기화를 실시해준다.
                 DestroyAudioPlayer(cachedLeft);
                 DestroyAudioPlayer(cachedRight);
 
                 cachedLeft = null;
                 cachedRight = null;
             }
+
+            this.m_FadeOutCurve.EndEvaluate();
         }
 
         protected override void BeforeMixUpdate(float deltaTime)
-        {}
+        {
+            // duration이 0일 경우 마지막 값에 바로 도달할 수 있는 Delta값을 계산
+            float dt = duration >= float.Epsilon ? deltaTime / duration : m_FadeOutCurve.EndTime - m_FadeOutCurve.CurveTime;
+            curveValue = m_FadeOutCurve.Evaluate(dt);
+        }
 
         protected override void PrepareMix(List<AudioTrack.AudioPlayer> left, List<AudioTrack.AudioPlayer> right)
         {}
 
         protected override bool Mixing(List<AudioTrack.AudioPlayer> left, List<AudioTrack.AudioPlayer> right)
         {
-            if (this.MixTime < duration)
+            if (!isEnd)
             {
-                ReusableCurve.CurveValue curveValue = m_FadeOutCurve.Evaluate(this.MixTime);
                 SetVolumeAll(left, curveValue.Normalized);
                 SetVolumeAll(right, curveValue.Normalized);
+                
+                isEnd = m_FadeOutCurve.GetNormalizedElapsedTime() >= 1.0f;
 
                 return true;
             }
