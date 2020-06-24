@@ -139,16 +139,24 @@ namespace ProvisGames.Core.AudioSystem
         }
 
         // Track에서 사용할 Mixer를 교체합니다.
-        public void SetTrackMixer(Mixer<AudioPlayer> mixer)
+        public void ChangeTrackMixer(Mixer<AudioPlayer> mixer)
         {
-            // 믹싱이 진행중 일 때, 같은 타입의 Mixer가 투입될 경우 무시해야함.
-            if (_isMixing && this.trackMixer.GetType() == mixer.GetType())
+            // 믹싱이 진행중 일 때, 같은 타입의 Mixer가 투입될 경우 무시하도록 알고리즘을 진행
+            if (_isMixing)
             {
-                Debug.Log("Same type of Mixer Ignored while mixing");
-                return;
+                // 같은 타입의 Mixer는 무시한다.
+                bool isSameType = this.trackMixer.GetType() == mixer.GetType();
+                if (!isSameType)
+                {
+                    // 믹싱 중일 때는, BeginMix를 먼저 실행하고 교체해주어야한다. Mixer를 교체하기하는 기능을 만들지 않았기 때문에!
+                    mixer.BeginMix();
+                    this.trackMixer = mixer;
+                }
             }
-
-            this.trackMixer = mixer;
+            else // 믹싱 중이 아닐 때는, mixer를 그냥 교체하면 된다.
+            {
+                this.trackMixer = mixer;
+            }
         }
 
         // Mix 기능을 실행할 수 있으면 현재 트랙에서 Mix를 실행합니다.

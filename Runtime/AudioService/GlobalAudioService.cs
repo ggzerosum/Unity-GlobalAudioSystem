@@ -67,7 +67,7 @@ namespace ProvisGames.Core.AudioSystem
         {
             TryCreateTrack(track);
             this.tracks[track].PlayAudio(setting, playMode);
-            this.tracks[track].SetTrackMixer(SelectMixer(mixmode));
+            this.tracks[track].ChangeTrackMixer(SelectMixer(mixmode));
             this.tracks[track].DoMixing();
         }
 
@@ -75,7 +75,7 @@ namespace ProvisGames.Core.AudioSystem
         {
             if (HasTrack(track))
             {
-                this.tracks[track].SetTrackMixer(SelectMixer(MixMode.FadeOut));
+                this.tracks[track].ChangeTrackMixer(SelectMixer(MixMode.FadeOut));
                 this.tracks[track].DoMixing();
             }
         }
